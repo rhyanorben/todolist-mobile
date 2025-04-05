@@ -10,12 +10,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
+import br.edu.satc.todolistcompose.persistence.database.TaskDatabase
+import br.edu.satc.todolistcompose.persistence.repository.TaskRepository
+import br.edu.satc.todolistcompose.persistence.viewModel.TaskViewModel
+import br.edu.satc.todolistcompose.persistence.viewModel.TaskViewModelFactory
 import br.edu.satc.todolistcompose.ui.screens.HomeScreen
 import br.edu.satc.todolistcompose.ui.theme.ToDoListComposeTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var viewModel: TaskViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val database = TaskDatabase.getDatabase(applicationContext)
+        val repository = TaskRepository(database.taskDao())
+        val factory = TaskViewModelFactory(repository)
+
+        viewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
 
         setContent {
             ToDoListComposeTheme {
@@ -24,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeScreen()
+                    HomeScreen(viewModel)
                 }
             }
         }

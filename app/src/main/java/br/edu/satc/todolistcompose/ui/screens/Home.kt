@@ -29,6 +29,7 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,16 +38,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import br.edu.satc.todolistcompose.TaskData
+import br.edu.satc.todolistcompose.domain.entity.TaskData
+import br.edu.satc.todolistcompose.persistence.viewModel.TaskViewModel
 import br.edu.satc.todolistcompose.ui.components.TaskCard
 import kotlinx.coroutines.launch
 
 
-@Preview(showBackground = true)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(taskViewModel: TaskViewModel) {
 
     // states by remember
     // Guardam valores importantes de controle em nossa home
@@ -119,19 +119,15 @@ fun HomeScreen() {
          * O que aparece no "meio".
          * Para ficar mais organizado, montei o conteúdo em functions separadas.
          * */
-        HomeContent(innerPadding)
-        NewTask(showBottomSheet = showBottomSheet) { showBottomSheet = false }
+        HomeContent(innerPadding, taskViewModel)
+        NewTask(showBottomSheet = showBottomSheet, taskViewModel) { showBottomSheet = false }
 
     }
 }
 
 @Composable
-fun HomeContent(innerPadding: PaddingValues) {
-
-    val tasks = mutableListOf<TaskData>()
-    for (i in 0..5) {
-        tasks.add(TaskData("Tarefa " + i, "Descricao " + i, i % 2 == 0))
-    }
+fun HomeContent(innerPadding: PaddingValues, viewModel: TaskViewModel) {
+    val tasks by viewModel.tasks.collectAsState()
 
     /**
      * Aqui simplesmente temos uma Column com o nosso conteúdo.
@@ -162,7 +158,7 @@ fun HomeContent(innerPadding: PaddingValues) {
  * Aqui podemos "cadastrar uma nova Task".
  */
 @Composable
-fun NewTask(showBottomSheet: Boolean, onComplete: () -> Unit) {
+fun NewTask(showBottomSheet: Boolean, viewModel: TaskViewModel, onComplete: () -> Unit) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var taskTitle by remember {
@@ -197,6 +193,14 @@ fun NewTask(showBottomSheet: Boolean, onComplete: () -> Unit) {
                     onValueChange = {taskDescription = it},
                     label = { Text(text = "Descrição da tarefa") })
                 Button(modifier = Modifier.padding(top = 4.dp), onClick = {
+
+                    val task = TaskData(
+                        title = taskTitle,
+                        description = taskDescription,
+                        complete = false
+                    )
+                    viewModel.addTask(task)
+
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
                             onComplete()
