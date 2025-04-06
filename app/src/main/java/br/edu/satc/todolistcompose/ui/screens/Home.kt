@@ -148,7 +148,7 @@ fun HomeContent(innerPadding: PaddingValues, viewModel: TaskViewModel) {
         verticalArrangement = Arrangement.Top
     ) {
         for (task in tasks) {
-            TaskCard(task.title, task.description, task.complete)
+            TaskCard(task, viewModel)
         }
     }
 }

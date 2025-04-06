@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="ToDoListCompose.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-04-05T19:02:42.586537314Z">
+        <DropdownSelection timestamp="2025-04-06T12:41:58.164146255Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/home/rhyanorben/.android/avd/Pixel_6a.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/rhyanorben/.android/avd/Medium_Phone.avd" />
             </handle>
           </Target>
         </DropdownSelection>

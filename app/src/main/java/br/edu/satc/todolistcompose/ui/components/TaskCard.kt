@@ -24,32 +24,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.edu.satc.todolistcompose.domain.entity.TaskData
+import br.edu.satc.todolistcompose.persistence.viewModel.TaskViewModel
 import br.edu.satc.todolistcompose.ui.theme.ToDoListComposeTheme
 
 @Composable
 fun TaskCard(
-    title: String = "Task title",
-    description: String = "Task description",
-    complete: Boolean = false
+    task: TaskData,
+    viewModel: TaskViewModel
 ) {
-    val taskTitle by remember {
-        mutableStateOf(title)
-    }
-    val taskDescription by remember {
-        mutableStateOf(description)
-    }
-    var taskComplete by remember {
-        mutableStateOf(complete)
-    }
-
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
-        ), modifier = Modifier.padding(top = 8.dp).fillMaxWidth().height(100.dp)
+        ), modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+            .height(100.dp)
 
     ) {
         Column(
-            modifier = Modifier.padding(8.dp).fillMaxWidth()
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -57,24 +53,22 @@ fun TaskCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = taskTitle,
+                    text = task.title,
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         fontFamily = FontFamily.Serif
                     )
                 )
-                Checkbox(checked = taskComplete, onCheckedChange = { taskComplete = it })
+                Checkbox(
+                    checked = task.complete,
+                    onCheckedChange = { checked ->
+                        val updatedTask = task.copy(complete = checked)
+                        viewModel.updateTask(updatedTask)
+                    }
+                )
             }
-            Text(text = taskDescription, fontSize = 12.sp)
+            Text(text = task.description, fontSize = 12.sp)
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TaskCardPreview() {
-    ToDoListComposeTheme {
-        TaskCard()
     }
 }
