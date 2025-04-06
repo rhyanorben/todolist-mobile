@@ -22,6 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,17 +43,25 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import br.edu.satc.todolistcompose.domain.entity.TaskData
 import br.edu.satc.todolistcompose.persistence.viewModel.TaskViewModel
+import br.edu.satc.todolistcompose.preferences.ThemeViewModel
 import br.edu.satc.todolistcompose.ui.components.TaskCard
+import br.edu.satc.todolistcompose.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun HomeScreen(taskViewModel: TaskViewModel) {
+fun HomeScreen(
+    taskViewModel: TaskViewModel,
+    themeViewModel: ThemeViewModel,
+    onThemeChange: (ThemeMode) -> Unit
+) {
 
     // states by remember
     // Guardam valores importantes de controle em nossa home
     var showBottomSheet by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     /**
      * O componente Scaffold facilita a construção de telas seguindo as guidelines
@@ -65,6 +75,7 @@ fun HomeScreen(taskViewModel: TaskViewModel) {
          * for realizado um "scroll" na lista
          * */
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
 
         /**
          * Aqui declaramos nossa Top Bar e o conteúdo dela
@@ -82,10 +93,26 @@ fun HomeScreen(taskViewModel: TaskViewModel) {
                      * Este é o botão de Settings que aparece no canto direito da TopBar
                      * Podemos usar ele para acessar alguma configuração do App.
                      * * */
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = {
+                        val nextMode = when (themeViewModel.themeMode.value) {
+                            ThemeMode.LIGHT -> ThemeMode.DARK
+                            ThemeMode.DARK -> ThemeMode.SYSTEM
+                            ThemeMode.SYSTEM -> ThemeMode.LIGHT
+                        }
+                        onThemeChange(nextMode)
+
+                        coroutineScope.launch {
+                            val modeName = when (nextMode) {
+                                ThemeMode.LIGHT -> "modo claro"
+                                ThemeMode.DARK -> "modo escuro"
+                                ThemeMode.SYSTEM -> "modo automático"
+                            }
+                            snackbarHostState.showSnackbar("Tema alterado para $modeName")
+                        }
+                    }) {
                         Icon(
                             Icons.Rounded.Settings,
-                            contentDescription = ""
+                            contentDescription = "Alterar Tema"
                         )
                     }
                 },
